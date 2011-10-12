@@ -31,6 +31,7 @@ BestInPlaceEditor.prototype = {
   // Public Interface Functions //////////////////////////////////////////////
 
   activate : function() {
+    console.debug('activate');
 		var elem = this.isNil ? "" : this.element.html();
     this.oldValue = elem;
     $(this.activator).unbind("click", this.clickHandler);
@@ -38,12 +39,14 @@ BestInPlaceEditor.prototype = {
   },
 
   abort : function() {
+    console.debug('abort');
     if (this.isNil) this.element.html(this.nil);
     else            this.element.html(this.oldValue);
     $(this.activator).bind('click', {editor: this}, this.clickHandler);
   },
 
   update : function() {
+    console.debug('update');
     var editor = this;
     if (this.formType in {"input":1, "textarea":1} && this.getValue() == this.oldValue)
     { // Avoid request if no change is made
@@ -173,6 +176,8 @@ BestInPlaceEditor.prototype = {
   // Handlers ////////////////////////////////////////////////////////////////
 
   loadSuccessCallback : function(data) {
+    console.debug("Data", this.element);
+    console.debug(this.objectName);
     this.element.html(data[this.objectName]);
 		// Binding back after being clicked
     $(this.activator).bind('click', {editor: this}, this.clickHandler);
@@ -200,16 +205,41 @@ BestInPlaceEditor.prototype = {
 BestInPlaceEditor.forms = {
   "input" : {
     activateForm : function() {
+      console.debug('activating', this, this.element);
+      var value = this.oldValue;
+      var displayValue = $(this.element).attr('data-value');
+      console.debug("displayValue", displayValue);
+      if (!(typeof displayValue === "undefined")) {
+        value = displayValue;
+      }
       var output = '<form class="form_in_place" action="javascript:void(0)" style="display:inline;">';
-      output += '<input type="text" value="' + this.sanitizeValue(this.oldValue) + '"></form>';
+      output += '<input type="text" value="' + this.sanitizeValue(value) + '"></form>';
       this.element.html(output);
       this.element.find('input')[0].select();
       this.element.find("form").bind('submit', {editor: this}, BestInPlaceEditor.forms.input.submitHandler);
       this.element.find("input").bind('blur',   {editor: this}, BestInPlaceEditor.forms.input.inputBlurHandler);
       this.element.find("input").bind('keyup', {editor: this}, BestInPlaceEditor.forms.input.keyupHandler);
     },
-
+    
     getValue :  function() {
+      
+      var id = $(this.element).attr('id');
+
+      function requestFormatting(value) {
+        jQuery.get(
+          "/format/" + id + "?value=" + encodeURIComponent(value),
+          function(data) {
+            console.debug("Data received:", data);
+            $('#' + id).html(data);
+            $('#' + id).attr('data-value', value);
+          }
+        );
+      }
+
+      var value = this.element.find("input").val();
+      if ($(this.element).attr('data-format') == 'true') {
+        value = requestFormatting(value);
+      }
       return this.sanitizeValue(this.element.find("input").val());
     },
 

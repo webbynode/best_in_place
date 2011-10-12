@@ -23,7 +23,7 @@ module BestInPlace
       end
       
       real_value = value
-      id = "best_in_place_#{object.class.to_s.gsub("::", "_").underscore}_#{field}"
+      id = "best_in_place_#{object.class.to_s.gsub("::", "_").underscore}_#{field}_#{object.id}"
 
       out = "<span class='best_in_place'"
       out << " id='#{id}'"

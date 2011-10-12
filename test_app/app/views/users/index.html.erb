@@ -9,7 +9,9 @@
 
 <% @users.each do |user| %>
   <tr>
-    <td><%= link_to user.name, user %></td>
+    <td><%= best_in_place user, :name, :type => :input do |name|
+        number_to_currency name
+      end %></td>
     <td><%= user.last_name %></td>
     <td><%= COUNTRIES[user.country.to_i] %></td>
   </tr>

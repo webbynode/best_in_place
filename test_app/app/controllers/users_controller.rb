@@ -1,4 +1,6 @@
 class UsersController < ApplicationController
+  respond_to :html, :json
+
   # GET /users
   # GET /users.xml
   def index
@@ -14,12 +16,17 @@ class UsersController < ApplicationController
   # GET /users/1.xml
   def show
     @user = User.find(params[:id])
-    @countries = COUNTRIES.map
+    @countries = COUNTRIES.to_a
 
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @user }
     end
+  end
+
+  def double_init
+    @user = User.find(params[:id])
+    @countries = COUNTRIES.to_a
   end
 
   # GET /users/new
@@ -60,12 +67,13 @@ class UsersController < ApplicationController
     @user = User.find(params[:id])
 
     respond_to do |format|
+      puts params[:user].inspect
       if @user.update_attributes(params[:user])
         format.html { redirect_to(@user, :notice => 'User was successfully updated.') }
-        format.json { head :ok }
+        format.json { respond_with_bip(@user) }
       else
         format.html { render :action => "edit" }
-        format.json  { render :json => @user.errors.full_messages, :status => :unprocessable_entity }
+        format.json { respond_with_bip(@user) }
       end
     end
   end
@@ -80,5 +88,12 @@ class UsersController < ApplicationController
       format.html { redirect_to(users_url) }
       format.xml  { head :ok }
     end
+  end
+
+  def test_respond_with
+    @user = User.find(params[:id])
+
+    @user.update_attributes(params[:user])
+    respond_with(@user)
   end
 end
